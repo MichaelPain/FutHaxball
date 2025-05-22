@@ -1,0 +1,127 @@
+.haxball-field {
+  border: 2px solid white;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  margin: 0 auto;
+  display: block;
+}
+
+#haxball-container {
+  width: 100%;
+  max-width: 800px;
+  margin: 20px auto;
+  padding: 10px;
+  background-color: #333;
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.7);
+}
+
+.game-controls {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+  padding: 10px;
+  background-color: #222;
+  border-radius: 5px;
+}
+
+.score-display {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 10px;
+  font-family: 'Arial Rounded MT Bold', 'Arial', sans-serif;
+  font-size: 28px;
+  font-weight: bold;
+  color: white;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.team-red {
+  color: #ff4040;
+  margin-right: 20px;
+}
+
+.team-blue {
+  color: #4040ff;
+  margin-left: 20px;
+}
+
+.score-separator {
+  margin: 0 10px;
+}
+
+.control-button {
+  background: linear-gradient(to bottom, #4CAF50, #2E7D32);
+  color: white;
+  border: none;
+  border-radius: 25px;
+  padding: 8px 15px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.control-button:hover {
+  background: linear-gradient(to bottom, #5CDF60, #3E8D42);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
+}
+
+.control-button:active {
+  transform: translateY(1px);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.game-instructions {
+  margin-top: 15px;
+  padding: 10px;
+  background-color: rgba(0, 0, 0, 0.7);
+  border-radius: 5px;
+  color: white;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  text-align: center;
+}
+
+/* Stili per il campo di gioco */
+canvas.haxball-field {
+  background-color: #0e8c0e; /* Verde brillante come nell'originale */
+  background-image: linear-gradient(135deg, #0e8c0e 25%, #1a5c1a 25%, #1a5c1a 50%, #0e8c0e 50%, #0e8c0e 75%, #1a5c1a 75%, #1a5c1a 100%);
+  background-size: 40px 40px;
+}
+
+/* Stili per i giocatori */
+.player {
+  border-radius: 50%;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.7);
+}
+
+.player.red {
+  background: radial-gradient(circle at 30% 30%, #ff6b6b, #ff0000);
+}
+
+.player.blue {
+  background: radial-gradient(circle at 30% 30%, #6b6bff, #0000ff);
+}
+
+/* Stili per la palla */
+.ball {
+  background: radial-gradient(circle at 30% 30%, #ffffff, #d0d0d0);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.7);
+}
+
+/* Stili per dispositivi mobili */
+@media (max-width: 768px) {
+  #haxball-container {
+    padding: 5px;
+  }
+  
+  .score-display {
+    font-size: 24px;
+  }
+  
+  .control-button {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+}

@@ -1,0 +1,264 @@
+/* Match Accept Screen */
+.match-accept-container {
+    background-color: rgba(0, 0, 0, 0.8);
+    border-radius: 10px;
+    padding: 20px;
+    max-width: 500px;
+    margin: 0 auto;
+    color: white;
+}
+
+.match-accept-header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.match-accept-content {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.match-info {
+    background-color: rgba(255, 255, 255, 0.1);
+    padding: 15px;
+    border-radius: 5px;
+}
+
+.match-actions {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+.match-timer {
+    text-align: center;
+    font-size: 1.2em;
+    color: #ffcc00;
+}
+
+/* Room Screen */
+.room-container {
+    background-color: rgba(0, 0, 0, 0.8);
+    border-radius: 10px;
+    padding: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+    color: white;
+}
+
+.room-header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.room-info {
+    margin-top: 10px;
+    font-size: 0.9em;
+    color: #ccc;
+}
+
+.room-content {
+    display: flex;
+    gap: 20px;
+}
+
+.teams-container {
+    flex: 2;
+    display: flex;
+    gap: 20px;
+}
+
+.team {
+    flex: 1;
+    background-color: rgba(255, 255, 255, 0.1);
+    padding: 15px;
+    border-radius: 5px;
+}
+
+.team.red-team h3 {
+    color: #ff4444;
+}
+
+.team.blue-team h3 {
+    color: #4444ff;
+}
+
+.team-players {
+    margin-top: 10px;
+}
+
+.room-chat {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 5px;
+    padding: 15px;
+}
+
+.chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    margin-bottom: 10px;
+    min-height: 200px;
+}
+
+.chat-input {
+    display: flex;
+    gap: 10px;
+}
+
+.chat-input input {
+    flex: 1;
+    padding: 8px;
+    border: none;
+    border-radius: 4px;
+    background-color: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+.room-footer {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+/* Play Screen */
+.play-container {
+    background-color: rgba(0, 0, 0, 0.8);
+    border-radius: 10px;
+    padding: 20px;
+    max-width: 600px;
+    margin: 0 auto;
+    color: white;
+}
+
+.play-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.play-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+.play-option {
+    background-color: rgba(255, 255, 255, 0.1);
+    padding: 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.play-option:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.play-option h3 {
+    margin-bottom: 10px;
+    color: #ffcc00;
+}
+
+.play-option p {
+    color: #ccc;
+    font-size: 0.9em;
+}
+
+.play-footer {
+    margin-top: 30px;
+    text-align: center;
+}
+
+/* Room Settings */
+.room-settings {
+    background-color: rgba(255, 255, 255, 0.1);
+    padding: 15px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+}
+
+.settings-section h3 {
+    margin-bottom: 15px;
+    color: #ffcc00;
+}
+
+.setting-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.setting-row label {
+    color: #ccc;
+}
+
+.setting-row select {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: none;
+    padding: 5px;
+    border-radius: 4px;
+    min-width: 100px;
+}
+
+/* Team Controls */
+.team-controls {
+    margin-bottom: 10px;
+}
+
+.team-join-btn {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.team-join-btn:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+}
+
+.team.red-team .team-join-btn {
+    background-color: rgba(255, 68, 68, 0.2);
+}
+
+.team.blue-team .team-join-btn {
+    background-color: rgba(68, 68, 255, 0.2);
+}
+
+.team.red-team .team-join-btn:hover {
+    background-color: rgba(255, 68, 68, 0.3);
+}
+
+.team.blue-team .team-join-btn:hover {
+    background-color: rgba(68, 68, 255, 0.3);
+}
+
+/* Error Container */
+.error-container {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(255, 0, 0, 0.8);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    display: none;
+    z-index: 1000;
+    animation: fadeInOut 3s ease-in-out;
+}
+
+@keyframes fadeInOut {
+    0% { opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { opacity: 0; }
+} 

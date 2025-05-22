@@ -1,0 +1,41 @@
+<!-- Schermata di visualizzazione torneo -->
+<div id="tournament-view-screen" class="screen" style="display: none;">
+    <div class="tournament-view-container">
+        <div class="tournament-header">
+            <h2 id="tournament-name">Nome Torneo</h2>
+        </div>
+        <div class="tournament-info">
+            <div class="tournament-detail">
+                <div class="detail-label">Data</div>
+                <div class="detail-content" id="tournament-date">--/--/----</div>
+            </div>
+            <div class="tournament-detail">
+                <div class="detail-label">Tipo</div>
+                <div class="detail-content" id="tournament-type">---</div>
+            </div>
+            <div class="tournament-detail">
+                <div class="detail-label">Stato</div>
+                <div class="detail-content" id="tournament-status">---</div>
+            </div>
+            <div class="tournament-detail">
+                <div class="detail-label">Partecipanti</div>
+                <div class="detail-content" id="tournament-participants">0/0</div>
+            </div>
+        </div>
+        <div class="tournament-description" id="tournament-description">
+            Nessuna descrizione disponibile.
+        </div>
+        <div class="tournament-bracket">
+            <h3 class="bracket-title">Tabellone</h3>
+            <div id="tournament-bracket-container" class="bracket-container">
+                <!-- Il tabellone verrà generato dinamicamente qui -->
+            </div>
+        </div>
+        <div class="tournament-actions">
+            <button id="tournament-join-btn" class="btn-primary" style="display: none;">Partecipa</button>
+        </div>
+        <div class="tournament-footer">
+            <button class="back-btn">Indietro</button>
+        </div>
+    </div>
+</div>

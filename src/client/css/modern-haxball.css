@@ -1,0 +1,213 @@
+/* Stili moderni per il campo di gioco HaxBall - Ispirato a www.haxball.com */
+.haxball-field {
+  border: 2px solid white;
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+  margin: 0 auto;
+  display: block;
+  border-radius: 5px;
+}
+
+#haxball-container {
+  width: 100%;
+  max-width: 1000px;
+  margin: 20px auto;
+  padding: 15px;
+  background-color: rgba(0, 0, 0, 0.7);
+  border-radius: 10px;
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
+  transition: all 0.3s ease;
+}
+
+.game-controls {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 15px;
+  padding: 12px;
+  background-color: rgba(0, 0, 0, 0.5);
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.score-display {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 15px 0;
+  font-family: 'Arial Rounded MT Bold', 'Arial', sans-serif;
+  font-size: 36px;
+  font-weight: bold;
+  color: white;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+  transition: all 0.3s ease;
+}
+
+.team-red {
+  color: #ff4040;
+  margin-right: 20px;
+  text-shadow: 0 0 10px rgba(255, 64, 64, 0.7);
+}
+
+.team-blue {
+  color: #4040ff;
+  margin-left: 20px;
+  text-shadow: 0 0 10px rgba(64, 64, 255, 0.7);
+}
+
+.score-separator {
+  margin: 0 15px;
+  opacity: 0.8;
+}
+
+.control-button {
+  background: linear-gradient(to bottom, #4CAF50, #2E7D32);
+  color: white;
+  border: none;
+  border-radius: 25px;
+  padding: 10px 20px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 14px;
+}
+
+.control-button:hover {
+  background: linear-gradient(to bottom, #5CDF60, #3E8D42);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.4);
+}
+
+.control-button:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.game-instructions {
+  margin-top: 15px;
+  padding: 12px;
+  background-color: rgba(0, 0, 0, 0.5);
+  border-radius: 8px;
+  color: white;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  text-align: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  border-left: 3px solid #4CAF50;
+}
+
+/* Stili per il selettore di mappe */
+.map-selector {
+  margin: 15px 0;
+  padding: 12px;
+  background-color: rgba(0, 0, 0, 0.5);
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.map-selector h3 {
+  margin-top: 0;
+  color: white;
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.map-options {
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+}
+
+.map-option {
+  background-color: rgba(0, 0, 0, 0.7);
+  border: 2px solid transparent;
+  border-radius: 8px;
+  padding: 10px;
+  margin: 5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 150px;
+  text-align: center;
+}
+
+.map-option:hover {
+  border-color: #4CAF50;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+}
+
+.map-option.selected {
+  border-color: #4CAF50;
+  background-color: rgba(76, 175, 80, 0.2);
+}
+
+.map-option h4 {
+  margin: 5px 0;
+  color: white;
+  font-size: 14px;
+}
+
+.map-option p {
+  margin: 5px 0;
+  color: #aaa;
+  font-size: 12px;
+}
+
+.map-preview {
+  width: 100%;
+  height: 80px;
+  background-color: #1a5c1a;
+  border-radius: 4px;
+  margin-bottom: 5px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 24px;
+  color: rgba(255, 255, 255, 0.3);
+}
+
+/* Animazioni per effetti visivi */
+@keyframes glow {
+  0% { box-shadow: 0 0 10px rgba(255, 255, 255, 0.3); }
+  50% { box-shadow: 0 0 20px rgba(255, 255, 255, 0.5); }
+  100% { box-shadow: 0 0 10px rgba(255, 255, 255, 0.3); }
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.glow-effect {
+  animation: glow 2s infinite;
+}
+
+.pulse-effect {
+  animation: pulse 2s infinite;
+}
+
+/* Stili per dispositivi mobili */
+@media (max-width: 768px) {
+  #haxball-container {
+    padding: 10px;
+  }
+  
+  .score-display {
+    font-size: 28px;
+  }
+  
+  .control-button {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+  
+  .map-options {
+    justify-content: center;
+  }
+  
+  .map-option {
+    width: 120px;
+  }
+}

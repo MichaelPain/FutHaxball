@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>HaxBall Clone</title>
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/menu.css">
+    <link rel="stylesheet" href="css/game.css">
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/modern-haxball.css">
+    <link rel="stylesheet" href="css/enhanced-haxball.css">
+    <link rel="stylesheet" href="css/login.css">
+    <link rel="icon" type="image/png" href="assets/images/favicon.png">
+</head>
+<body>
+    <div id="error-container" class="error-container"></div>
+    
+    <div id="app">
+        <!-- Schermata di caricamento -->
+        <div id="loading-screen" class="screen">
+            <div class="loading-container">
+                <h1>HaxBall Clone</h1>
+                <div class="loading-spinner"></div>
+                <p>Caricamento in corso...</p>
+            </div>
+        </div>
+
+        <!-- Schermata di login/registrazione -->
+        <div id="auth-screen" class="screen" style="display: none;">
+            <div class="auth-screen">
+                <div class="auth-container">
+                    <div class="auth-logo">
+                        <img src="assets/images/logo.png" alt="HaxBall Clone Logo">
+                    </div>
+                    <div class="auth-tabs">
+                        <div class="auth-tab active" data-tab="login">Accedi</div>
+                        <div class="auth-tab" data-tab="register">Registrati</div>
+                    </div>
+                    
+                    <!-- Form di login -->
+                    <div class="auth-form" id="login-form">
+                        <div class="form-group">
+                            <label for="login-email">Email</label>
+                            <input type="email" id="login-email" class="form-control" placeholder="Inserisci la tua email">
+                            <div class="error-message" id="login-email-error"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="login-password">Password</label>
+                            <input type="password" id="login-password" class="form-control" placeholder="Inserisci la tua password">
+                            <div class="error-message" id="login-password-error"></div>
+                        </div>
+                        <div class="remember-me">
+                            <input type="checkbox" id="remember-me">
+                            <label for="remember-me">Ricordami</label>
+                        </div>
+                        <button class="auth-button" id="login-button">Accedi</button>
+                        <div class="error-message" id="login-error"></div>
+                        <div class="success-message" id="login-success"></div>
+                        <div class="auth-links">
+                            <a class="auth-link" id="forgot-password">Password dimenticata?</a>
+                        </div>
+                        <div class="guest-login">
+                            <button class="auth-button guest-button" id="guest-button">Gioca come ospite</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Form di registrazione -->
+                    <div class="auth-form" id="register-form" style="display: none;">
+                        <div class="form-group">
+                            <label for="register-nickname">Nickname</label>
+                            <input type="text" id="register-nickname" class="form-control" placeholder="Scegli un nickname">
+                            <div class="error-message" id="register-nickname-error"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="register-email">Email</label>
+                            <input type="email" id="register-email" class="form-control" placeholder="Inserisci la tua email">
+                            <div class="error-message" id="register-email-error"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="register-password">Password</label>
+                            <input type="password" id="register-password" class="form-control" placeholder="Crea una password">
+                            <div class="error-message" id="register-password-error"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="register-confirm-password">Conferma Password</label>
+                            <input type="password" id="register-confirm-password" class="form-control" placeholder="Conferma la password">
+                            <div class="error-message" id="register-confirm-password-error"></div>
+                        </div>
+                        <button class="auth-button" id="register-button">Registrati</button>
+                        <div class="error-message" id="register-error"></div>
+                        <div class="success-message" id="register-success"></div>
+                    </div>
+                    
+                    <!-- Form di recupero password -->
+                    <div class="auth-form" id="forgot-form" style="display: none;">
+                        <div class="form-group">
+                            <label for="forgot-email">Email</label>
+                            <input type="email" id="forgot-email" class="form-control" placeholder="Inserisci la tua email">
+                            <div class="error-message" id="forgot-email-error"></div>
+                        </div>
+                        <button class="auth-button" id="forgot-button">Recupera Password</button>
+                        <div class="error-message" id="forgot-error"></div>
+                        <div class="success-message" id="forgot-success"></div>
+                        <div class="auth-links">
+                            <a class="auth-link" id="back-to-login">Torna al login</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Menu principale -->
+        <div id="main-menu-screen" class="screen" style="display: none;">
+            <div class="main-menu">
+                <div class="logo">
+                    <img src="assets/images/logo.png" alt="HaxBall Clone Logo">
+                </div>
+                <div class="menu-options">
+                    <button class="menu-option" data-action="play">Gioca</button>
+                    <button class="menu-option" data-action="ranked">Ranked</button>
+                    <button class="menu-option" data-action="rooms">Stanze</button>
+                    <button class="menu-option" data-action="profile">Profilo</button>
+                    <button class="menu-option" data-action="leaderboard">Classifiche</button>
+                    <button class="menu-option" data-action="events">Eventi & Tornei</button>
+                    <button class="menu-option" data-action="settings">Impostazioni</button>
+                    <button class="menu-option" data-action="logout">Esci</button>
+                </div>
+                <div class="version">v1.2.0</div>
+            </div>
+        </div>
+
+        <!-- Schermata delle stanze -->
+        <div id="rooms-screen" class="screen" style="display: none;">
+            <div class="rooms-container">
+                <div class="rooms-header">
+                    <h2>Stanze Disponibili</h2>
+                    <div class="rooms-controls">
+                        <input type="text" id="room-search" placeholder="Cerca stanza...">
+                        <select id="room-filter">
+                            <option value="all">Tutte</option>
+                            <option value="public">Pubbliche</option>
+                            <option value="password">Con Password</option>
+                        </select>
+                        <button class="create-room-btn">Crea Stanza</button>
+                    </div>
+                </div>
+                <div class="rooms-list">
+                    <!-- Le stanze verranno generate dinamicamente qui -->
+                </div>
+                <div class="rooms-footer">
+                    <button class="back-btn">Indietro</button>
+                    <div class="online-players">
+                        <span id="online-count">0</span> giocatori online
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Schermata di creazione stanza (AGGIUNTA) -->
+        <div id="create-room-screen" class="screen" style="display: none;">
+            <div class="create-room-container">
+                <div class="create-room-header">
+                    <h2>Crea una nuova stanza</h2>
+                </div>
+                <div class="create-room-form">
+                    <div class="form-group">
+                        <label for="room-name">Nome stanza</label>
+                        <input type="text" id="room-name" class="form-control" placeholder="Inserisci un nome per la stanza">
+                    </div>
+                    <div class="form-group">
+                        <label for="room-password">Password (opzionale)</label>
+                        <input type="password" id="room-password" class="form-control" placeholder="Lascia vuoto per stanza pubblica">
+                    </div>
+                    <div class="form-group">
+                        <label for="max-players">Numero massimo di giocatori</label>
+                        <input type="number" id="max-players" class="form-control" value="10" min="2" max="20">
+                    </div>
+                    <div class="form-group">
+                        <label for="room-type">Tipo di stanza</label>
+                        <select id="room-type" class="form-control">
+                            <option value="normal">Normale</option>
+                            <option value="ranked">Competitiva</option>
+                            <option value="custom">Personalizzata</option>
+                        </select>
+                    </div>
+                    <div class="form-actions">
+                        <button id="create-room-submit" class="btn btn-primary">Crea stanza</button>
+                        <button id="create-room-cancel" class="btn btn-secondary back-btn">Annulla</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Schermata di matchmaking ranked (AGGIUNTA) -->
+        <div id="ranked-matchmaking-screen" class="screen" style="display: none;">
+            <div class="ranked-container">
+                <div class="ranked-header">
+                    <h2>Modalità Ranked</h2>
+                </div>
+                <div class="ranked-content">
+                    <div class="ranked-description">
+                        <p>Seleziona una modalità per entrare in coda e competere contro giocatori del tuo livello.</p>
+                    </div>
+                    <div class="ranked-modes">
+                        <div class="ranked-mode-item" data-mode="1v1">
+                            <h3>Solo (1v1)</h3>
+                            <p>Sfida uno contro uno</p>
+                            <div class="mode-mmr">MMR: <span class="mmr-value">1000</span></div>
+                        </div>
+                        <div class="ranked-mode-item" data-mode="2v2">
+                            <h3>Doubles (2v2)</h3>
+                            <p>Partite a coppie</p>
+                            <div class="mode-mmr">MMR: <span class="mmr-value">1000</span></div>
+                        </div>
+                        <div class="ranked-mode-item" data-mode="3v3">
+                            <h3>Team (3v3+)</h3>
+                            <p>Partite a squadre</p>
+                            <div class="mode-mmr">MMR: <span class="mmr-value">1000</span></div>
+                        </div>
+                    </div>
+                    <div class="ranked-queue-status" style="display: none;">
+                        <h3>In coda per <span id="queue-mode-display">1v1</span></h3>
+                        <div class="queue-info">
+                            <p>Tempo in coda: <span id="queue-time">00:00</span></p>
+                            <p>Tempo stimato: <span id="estimated-time">00:30</span></p>
+                        </div>
+                        <button id="cancel-queue" class="btn btn-danger">Annulla</button>
+                    </div>
+                    <div class="ranked-match-found" style="display: none;">
+                        <h3>Match trovato!</h3>
+                        <div class="match-info">
+                            <p>Modalità: <span id="match-mode-display">1v1</span></p>
+                            <p>MMR medio: <span id="match-mmr">1000</span></p>
+                        </div>
+                        <div class="match-actions">
+                            <button id="accept-match" class="btn btn-success">Accetta</button>
+                            <button id="decline-match" class="btn btn-danger">Rifiuta</button>
+                        </div>
+                        <div class="match-timer">
+                            <span id="match-timer-value">30</span>s
+                        </div>
+                    </div>
+                </div>
+                <div class="ranked-footer">
+                    <button class="back-btn">Indietro</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Schermata di accettazione match -->
+        <div id="match-accept-screen" class="screen" style="display: none;">
+            <div class="match-accept-container">
+                <div class="match-accept-header">
+                    <h2>Match Trovato!</h2>
+                </div>
+                <div class="match-accept-content">
+                    <div class="match-info">
+                        <p>Modalità: <span id="match-mode">1v1</span></p>
+                        <p>MMR medio: <span id="match-mmr">1000</span></p>
+                        <p>Avversari: <span id="match-opponents">Caricamento...</span></p>
+                    </div>
+                    <div class="match-actions">
+                        <button id="accept-match-btn" class="btn btn-success">Accetta</button>
+                        <button id="decline-match-btn" class="btn btn-danger">Rifiuta</button>
+                    </div>
+                    <div class="match-timer">
+                        <span id="match-timer">30</span>s
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Schermata della stanza -->
+        <div id="room-screen" class="screen" style="display: none;">
+            <div class="room-container">
+                <div class="room-header">
+                    <h2 id="room-name">Nome Stanza</h2>
+                    <div class="room-info">
+                        <span id="room-players">0/10</span> giocatori
+                        <span id="room-status">In attesa</span>
+                    </div>
+                </div>
+                <div class="room-content">
+                    <div class="room-settings">
+                        <div class="settings-section">
+                            <h3>Impostazioni Partita</h3>
+                            <div class="setting-row">
+                                <label for="time-limit">Limite di tempo (min):</label>
+                                <select id="time-limit">
+                                    <option value="5">5</option>
+                                    <option value="10">10</option>
+                                    <option value="15">15</option>
+                                </select>
+                            </div>
+                            <div class="setting-row">
+                                <label for="score-limit">Limite di gol:</label>
+                                <select id="score-limit">
+                                    <option value="5">5</option>
+                                    <option value="10">10</option>
+                                    <option value="15">15</option>
+                                </select>
+                            </div>
+                            <div class="setting-row">
+                                <label for="field-type">Tipo di campo:</label>
+                                <select id="field-type">
+                                    <option value="classic">Classico</option>
+                                    <option value="small">Piccolo</option>
+                                    <option value="big">Grande</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="teams-container">
+                        <div class="team red-team">
+                            <h3>Squadra Rossa</h3>
+                            <div class="team-controls">
+                                <button class="team-join-btn" data-team="red">Unisciti</button>
+                            </div>
+                            <div id="red-team-players" class="team-players">
+                                <!-- Giocatori verranno aggiunti qui -->
+                            </div>
+                        </div>
+                        <div class="team blue-team">
+                            <h3>Squadra Blu</h3>
+                            <div class="team-controls">
+                                <button class="team-join-btn" data-team="blue">Unisciti</button>
+                            </div>
+                            <div id="blue-team-players" class="team-players">
+                                <!-- Giocatori verranno aggiunti qui -->
+                            </div>
+                        </div>
+                    </div>
+                    <div class="room-chat">
+                        <div id="chat-messages" class="chat-messages">
+                            <!-- Messaggi verranno aggiunti qui -->
+                        </div>
+                        <div class="chat-input">
+                            <input type="text" id="chat-input" placeholder="Scrivi un messaggio...">
+                            <button id="send-message">Invia</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="room-footer">
+                    <button id="leave-room" class="btn btn-danger">Lascia Stanza</button>
+                    <button id="start-game" class="btn btn-success" style="display: none;">Avvia Partita</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Schermata di gioco -->
+        <div id="play-screen" class="screen" style="display: none;">
+            <div class="play-container">
+                <div class="play-header">
+                    <h2>Modalità di Gioco</h2>
+                </div>
+                <div class="play-content">
+                    <div class="play-options">
+                        <div class="play-option" data-mode="quick">
+                            <h3>Partita Rapida</h3>
+                            <p>Gioca una partita casuale</p>
+                        </div>
+                        <div class="play-option" data-mode="ranked">
+                            <h3>Ranked</h3>
+                            <p>Partite competitive</p>
+                        </div>
+                        <div class="play-option" data-mode="custom">
+                            <h3>Personalizzata</h3>
+                            <p>Crea o unisciti a una stanza</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="play-footer">
+                    <button class="back-btn">Indietro</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Schermata di gioco -->
+        <div id="game-screen" class="screen" style="display: none;">
+            <div class="game-info">
+                <div class="score-display">
+                    <span class="team-red">0</span>
+                    <span class="score-separator">-</span>
+                    <span class="team-blue">0</span>
+                </div>
+                <div class="game-timer">05:00</div>
+            </div>
+            <div id="game-container">
+                <!-- Il campo di gioco verrà creato dinamicamente qui -->
+            </div>
+            <div class="game-controls">
+                <div class="control-buttons">
+                    <button class="control-button" data-action="leave">Esci</button>
+                    <button class="control-button" data-action="settings">Impostazioni</button>
+                </div>
+            </div>
+            <div class="game-chat">
+                <div class="chat-messages"></div>
+                <div class="chat-input-container">
+                    <input type="text" class="chat-input" placeholder="Scrivi un messaggio...">
+                    <button class="chat-send">Invia</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Schermata del profilo -->
+        <div id="profile-screen" class="screen" style="display: none;">
+            <div class="profile-container">
+                <div class="profile-header">
+                    <h2>Il Tuo Profilo</h2>
+                </div>
+                <div class="profile-content">
+                    <div class="profile-avatar">
+                        <div class="avatar-display"></div>
+                        <button class="change-avatar-btn">Cambia Avatar</button>
+                    </div>
+                    <div class="profile-info">
+                        <div class="info-row">
+                            <span class="info-label">Nickname:</span>
+                            <span class="info-value" id="profile-nickname">-</span>
+                            <button class="edit-btn" data-field="nickname">Modifica</button>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Email:</span>
+                            <span class="info-value" id="profile-email">-</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Paese:</span>
+                            <span class="info-value" id="profile-country">-</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Data di registrazione:</span>
+                            <span class="info-value" id="profile-registration-date">-</span>
+                        </div>
+                        <button class="change-password-btn">Cambia Password</button>
+                    </div>
+                    <div class="profile-stats">
+                        <h3>Statistiche</h3>
+                        <div class="stats-tabs">
+                            <button class="stats-tab active" data-mode="overall">Generali</button>
+                            <button class="stats-tab" data-mode="1v1">1v1</button>
+                            <button class="stats-tab" data-mode="2v2">2v2</button>
+                            <button class="stats-tab" data-mode="3v3">3v3+</button>
+                        </div>
+                        <div class="stats-content">
+                            <!-- Le statistiche verranno generate dinamicamente qui -->
+                        </div>
+                    </div>
+                </div>
+                <div class="profile-footer">
+                    <button class="back-btn">Indietro</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Schermata delle classifiche -->
+        <div id="leaderboard-screen" class="screen" style="display: none;">
+            <div class="leaderboard-container">
+                <div class="leaderboard-header">
+                    <h2>Classifiche</h2>
+                </div>
+                <div class="leaderboard-tabs">
+                    <button class="leaderboard-tab active" data-mode="1v1">1v1</button>
+                    <button class="leaderboard-tab" data-mode="2v2">2v2</button>
+                    <button class="leaderboard-tab" data-mode="3v3">3v3+</button>
+                    <button class="leaderboard-tab" data-mode="goals">Gol</button>
+                    <button class="leaderboard-tab" data-mode="games">Partite</button>
+                </div>
+                <div class="leaderboard-content">
+                    <table class="leaderboard-table">
+                        <thead>
+                            <tr>
+                                <th>Pos</th>
+                                <th>Giocatore</th>
+                                <th>MMR</th>
+                                <th>V</th>
+                                <th>S</th>
+                                <th>%</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Le classifiche verranno generate dinamicamente qui -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="leaderboard-footer">
+                    <button class="back-btn">Indietro</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Schermata degli eventi e tornei -->
+        <div id="events-screen" class="screen" style="display: none;">
+            <div class="events-container">
+                <div class="events-header">
+                    <h2>Eventi & Tornei</h2>
+                </div>
+                <div class="events-tabs">
+                    <button class="events-tab active" data-type="current">In Corso</button>
+                    <button class="events-tab" data-type="upcoming">In Arrivo</button>
+                    <button class="events-tab" data-type="past">Passati</button>
+                    <button class="events-tab" data-type="my">I Miei Tornei</button>
+                </div>
+                <div class="events-list">
+                    <!-- Gli eventi verranno generati dinamicamente qui -->
+                </div>
+                <div class="events-footer">
+                    <button class="back-btn">Indietro</button>
+                    <button class="create-tournament-btn" style="display: none;">Crea Torneo</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Schermata di visualizzazione torneo (AGGIUNTA) -->
+        <div id="tournament-view-screen" class="screen" style="display: none;">
+            <div class="tournament-view-container">
+                <div class="tournament-header">
+                    <h2 id="tournament-name">Nome Torneo</h2>
+                    <div class="tournament-info">
+                        <span id="tournament-date">Data: --/--/----</span>
+                        <span id="tournament-type">Tipo: ---</span>
+                        <span id="tournament-status">Stato: ---</span>
+                    </div>
+                </div>
+                <div class="tournament-content">
+                    <div class="tournament-description" id="tournament-description">
+                        <!-- Descrizione del torneo -->
+                    </div>
+                    <div class="tournament-bracket" id="tournament-bracket">
+                        <!-- Bracket del torneo -->
+                    </div>
+                    <div class="tournament-participants">
+                        <h3>Partecipanti</h3>
+                        <div id="tournament-participants-list">
+                            <!-- Lista dei partecipanti -->
+                        </div>
+                    </div>
+                </div>
+                <div class="tournament-footer">
+                    <button class="back-btn">Indietro</button>
+                    <button id="tournament-join-btn" style="display: none;">Partecipa</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Schermata delle impostazioni -->
+        <div id="settings-screen" class="screen" style="display: none;">
+            <div class="settings-container">
+                <div class="settings-header">
+                    <h2>Impostazioni</h2>
+                </div>
+                <div class="settings-content">
+                    <div class="settings-section">
+                        <h3>Grafica</h3>
+                        <div class="setting-row">
+                            <span class="setting-label">Qualità grafica:</span>
+                            <select id="graphics-quality">
+                                <option value="high">Alta</option>
+                                <option value="medium">Media</option>
+                                <option value="low">Bassa</option>
+                            </select>
+                        </div>
+                        <div class="setting-row">
+                            <span class="setting-label">Effetti particellari:</span>
+                            <input type="checkbox" id="particle-effects" checked>
+                        </div>
+                        <div class="setting-row">
+                            <span class="setting-label">Ombre dinamiche:</span>
+                            <input type="checkbox" id="dynamic-shadows" checked>
+                        </div>
+                    </div>
+                    <div class="settings-section">
+                        <h3>Audio</h3>
+                        <div class="setting-row">
+                            <span class="setting-label">Effetti sonori:</span>
+                            <input type="checkbox" id="sound-effects" checked>
+                        </div>
+                        <div class="setting-row">
+                            <span class="setting-label">Volume:</span>
+                            <input type="range" id="volume" min="0" max="100" value="80">
+                            <span id="volume-value">80%</span>
+                        </div>
+                    </div>
+                    <div class="settings-section">
+                        <h3>Gameplay</h3>
+                        <div class="setting-row">
+                            <span class="setting-label">Mostra nickname:</span>
+                            <input type="checkbox" id="show-nicknames" checked>
+                        </div>
+                        <div class="setting-row">
+                            <span class="setting-label">Replay automatici:</span>
+                            <input type="checkbox" id="auto-replays" checked>
+                        </div>
+                        <div class="setting-row">
+                            <span class="setting-label">Indicatore di possesso:</span>
+                            <input type="checkbox" id="possession-indicator" checked>
+                        </div>
+                    </div>
+                </div>
+                <div class="settings-footer">
+                    <button class="back-btn">Indietro</button>
+                    <button id="reset-settings">Ripristina predefinite</button>
+                    <button id="save-settings">Salva</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stili CSS per i modal -->
+    <style>
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background-color: #1a1a1a;
+            border-radius: 8px;
+            padding: 20px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+        
+        .modal h3 {
+            margin-top: 0;
+            margin-bottom: 20px;
+            color: #fff;
+            font-size: 1.5em;
+            text-align: center;
+        }
+        
+        .modal .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .modal label {
+            display: block;
+            margin-bottom: 5px;
+            color: #ccc;
+        }
+        
+        .modal .form-control {
+            width: 100%;
+            padding: 10px;
+            border-radius: 4px;
+            background-color: #333;
+            border: 1px solid #444;
+            color: #fff;
+        }
+        
+        .modal .modal-actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        
+        .modal .btn {
+            padding: 10px 20px;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .modal .btn-primary {
+            background-color: #4caf50;
+            color: white;
+        }
+        
+        .modal .btn-secondary {
+            background-color: #555;
+            color: white;
+        }
+        
+        .modal .btn-danger {
+            background-color: #f44336;
+            color: white;
+        }
+    </style>
+
+    <!-- Script JavaScript -->
+    <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
+    <script type="module" src="js/networkManager.js"></script>
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>
