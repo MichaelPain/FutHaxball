@@ -1,0 +1,20 @@
+# Node.js
+server/node_modules/
+server/package-lock.json
+node_modules/
+package-lock.json
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# VSCode
+.vscode/
+
+# General
+.DS_Store
+.env
+*.log

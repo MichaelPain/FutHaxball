@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Haxball Clone</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            padding-top: 20px;
+            background-color: #f0f0f0;
+        }
+        #game-container {
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+        }
+        #game-canvas {
+            display: block; /* Removes extra space below canvas */
+            background-color: #333; /* Dark background for the game area */
+        }
+        #chat-container {
+            width: 800px; /* Same width as canvas */
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #ccc;
+            background-color: #fff;
+        }
+        #chat-messages {
+            height: 100px; /* Fixed height */
+            overflow-y: scroll; /* Scroll for overflow */
+            border-bottom: 1px solid #ccc;
+            padding: 10px;
+            display: flex;
+            flex-direction: column-reverse; /* Newest messages at the bottom, visually */
+        }
+        #chat-messages p {
+            margin: 2px 0;
+            font-size: 0.9em;
+        }
+        #chat-input {
+            border: none;
+            padding: 10px;
+            font-size: 1em;
+            width: calc(100% - 20px); /* Adjust for padding */
+        }
+        #chat-input:focus {
+            outline: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="game-canvas" width="800" height="600"></canvas>
+    </div>
+
+    <div id="chat-container">
+        <div id="chat-messages">
+            <!-- Messages will appear here -->
+        </div>
+        <input type="text" id="chat-input" placeholder="Type message...">
+    </div>
+
+    <script src="https://unpkg.com/simple-peer/simplepeer.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="main.js" defer></script>
+</body>
+</html>
