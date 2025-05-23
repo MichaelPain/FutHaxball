@@ -35,7 +35,7 @@ Questo progetto è un clone avanzato del popolare gioco di calcio 2D [HaxBall](h
 - **Database**: MongoDB
 - **Autenticazione**: JWT, bcrypt
 - **Comunicazione in tempo reale**: Socket.IO, WebRTC
-- **Test**: Mocha, Chai
+- **Test**: Jest (Client-side), Mocha, Chai, Sinon (Server-side)
 
 ## Struttura del Progetto
 
@@ -102,18 +102,24 @@ Per informazioni dettagliate, consulta:
 
 ## Test
 
-Per eseguire i test delle funzionalità base:
-
+### Test Lato Client (Jest)
+Per eseguire i test unitari e di integrazione per la logica client-side:
 ```bash
+npm test
+```
+Per eseguirli in modalità watch:
+```bash
+npm run test:watch
+```
+Questi test coprono utilità client-side e gestori logici.
+
+### Test Lato Server (Mocha)
+Per i test di integrazione e di sistema per la logica server-side:
+```bash
+# Assicurati che le dipendenze di sviluppo per i test server siano installate.
+# (mocha, chai, chai-http, sinon - idealmente definite in package.json)
 cd test
 node runTests.js
-```
-
-Per eseguire i test delle funzionalità aggiuntive:
-
-```bash
-cd test
-node runAdditionalTests.js
 ```
 
 ## Licenza

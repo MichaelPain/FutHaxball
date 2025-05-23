@@ -27,9 +27,22 @@ npm install
 PORT=3000
 MONGODB_URI=mongodb://localhost:27017/haxball-clone
 JWT_SECRET=il_tuo_segreto_jwt
+
+# Email Configuration
 EMAIL_SERVICE=gmail
 EMAIL_USER=tua_email@gmail.com
 EMAIL_PASSWORD=tua_password_email
+
+# Geolocation API Key (Optional, used for specific geo-features if implemented)
+# GEOLOCATION_API_KEY=your_geolocation_api_key
+
+# Room Manager Settings (Optional, defaults will be used if not set)
+# These values override the defaults set in src/server/config.js
+# ROOM_MAX_PLAYERS_PER_ROOM=10
+# ROOM_MAX_ROOMS_PER_USER=1
+# ROOM_INACTIVITY_TIMEOUT_MS=1800000  # Default: 30 minuti (30 * 60 * 1000)
+# ROOM_GAME_START_DELAY_MS=3000     # Default: 3 secondi (3 * 1000)
+# ROOM_TEAM_BALANCE_THRESHOLD=1
 ```
 
 ## Deployment del Database
