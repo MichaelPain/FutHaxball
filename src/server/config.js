@@ -51,5 +51,14 @@ module.exports = {
   // Configurazione del test
   test: {
     dbUri: 'mongodb://localhost:27017/haxball-clone-test'
+  },
+
+  // Configurazione per RoomManager
+  roomManagerSettings: {
+    maxPlayersPerRoom: parseInt(process.env.ROOM_MAX_PLAYERS_PER_ROOM) || 10,
+    maxRoomsPerUser: parseInt(process.env.ROOM_MAX_ROOMS_PER_USER) || 1,
+    inactivityTimeoutMs: parseInt(process.env.ROOM_INACTIVITY_TIMEOUT_MS) || 30 * 60 * 1000, // 30 minutes
+    gameStartDelayMs: parseInt(process.env.ROOM_GAME_START_DELAY_MS) || 3000, // 3 seconds
+    teamBalanceThreshold: parseInt(process.env.ROOM_TEAM_BALANCE_THRESHOLD) || 1,
   }
 };

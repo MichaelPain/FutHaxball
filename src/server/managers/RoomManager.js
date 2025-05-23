@@ -1,418 +1,353 @@
-const { v4: uuidv4 } = require('uuid');
+// const { v4: uuidv4 } = require('uuid'); // uuid is now used within Room.js
 const { socketErrorHandler } = require('../middleware/errorHandler');
+const { Room } = require('../game/Room.js'); // Import the new Room class
+const config = require('../config'); // Import the centralized config
 
 class RoomManager {
   constructor(io) {
     this.io = io;
-    this.rooms = new Map();
-    this.userRooms = new Map(); // Maps user IDs to room IDs
-    
-    // Room settings
-    this.settings = {
-      maxPlayersPerRoom: 10,
-      maxRoomsPerUser: 1,
-      inactivityTimeout: 30 * 60 * 1000, // 30 minutes
-      gameStartDelay: 3000, // 3 seconds
-      teamBalanceThreshold: 1 // Maximum difference in team sizes
-    };
-    
-    // Start cleanup interval
+    this.rooms = new Map(); // Will store Room instances: Map<roomId, Room>
+    this.userRooms = new Map(); // Maps user IDs to a Set of room IDs they are in
+
+    // Use centralized settings
+    this.settings = config.roomManagerSettings;
+
     this.startCleanupInterval();
   }
-  
+
   startCleanupInterval() {
     setInterval(() => {
       this.cleanupInactiveRooms();
-    }, 5 * 60 * 1000); // Check every 5 minutes
+    }, 5 * 60 * 1000); // Check every 5 minutes. Consider making this interval configurable too.
   }
-  
+
   cleanupInactiveRooms() {
     const now = Date.now();
     for (const [roomId, room] of this.rooms) {
-      if (now - room.lastActivity > this.settings.inactivityTimeout) {
+      // Use the new key name for inactivityTimeoutMs
+      if (now - room.lastActivity > this.settings.inactivityTimeoutMs) {
+        console.log(`Room ${roomId} timed out due to inactivity.`);
         this.closeRoom(roomId, 'Room closed due to inactivity');
       }
     }
   }
-  
+
   createRoom(socket, data) {
     try {
-      const userId = socket.userId;
-      
-      // Check if user already has a room
-      if (this.userRooms.get(userId)?.size >= this.settings.maxRoomsPerUser) {
-        throw new Error('You have reached the maximum number of rooms');
+      const userId = socket.userId; // Assuming socket.userId is set by auth middleware
+      const userNickname = socket.nickname; // Assuming socket.nickname is set
+
+      if (!userId || !userNickname) {
+        throw new Error('User ID or nickname not found on socket.');
       }
       
-      const roomId = uuidv4();
-      const room = {
-        id: roomId,
-        name: data.name,
-        password: data.password || null,
-        maxPlayers: Math.min(data.maxPlayers || 10, this.settings.maxPlayersPerRoom),
-        type: data.type || 'normal',
-        host: userId,
-        players: new Map(),
-        redTeam: new Set(),
-        blueTeam: new Set(),
-        spectators: new Set([userId]),
-        gameInProgress: false,
-        gameState: null,
-        lastActivity: Date.now(),
-        settings: {
-          scoreLimit: data.scoreLimit || 3,
-          timeLimit: data.timeLimit || 5 * 60, // 5 minutes
-          teamLock: data.teamLock || false,
-          allowSpectators: data.allowSpectators ?? true
-        }
+      if ((this.userRooms.get(userId)?.size || 0) >= this.settings.maxRoomsPerUser) {
+        throw new Error('You have reached the maximum number of rooms you can create or join.');
+      }
+
+      // Pass relevant global defaults from this.settings (which is config.roomManagerSettings)
+      // to the Room constructor if client data doesn't specify them.
+      // Room.js's constructor should prioritize client data (data.*) then room manager defaults.
+      const roomSpecificSettingsFromClient = {
+        scoreLimit: data.scoreLimit,
+        timeLimit: data.timeLimit,
+        teamLock: data.teamLock,
+        allowSpectators: data.allowSpectators,
+        // These now come from global config by default if not in data, Room will handle defaults
+        teamBalanceThreshold: data.teamBalanceThreshold || this.settings.teamBalanceThreshold, 
+        gameStartDelay: data.gameStartDelay || this.settings.gameStartDelayMs,
       };
       
-      // Add player to room
-      room.players.set(userId, {
-        id: userId,
-        nickname: socket.nickname,
-        isHost: true,
-        team: 'spectator',
-        socket: socket
-      });
-      
-      // Store room
-      this.rooms.set(roomId, room);
-      
-      // Map user to room
+      const newRoom = new Room(
+        data.name,
+        data.password || null,
+        // Use maxPlayersPerRoom from centralized settings
+        Math.min(data.maxPlayers || this.settings.maxPlayersPerRoom, this.settings.maxPlayersPerRoom),
+        data.type || 'standard',
+        userId,
+        userNickname,
+        socket, // Pass the host's socket to the Room constructor
+        roomSpecificSettingsFromClient, // Pass the composed settings
+        this.io // Pass the main io instance to the Room
+      );
+
+      this.rooms.set(newRoom.id, newRoom);
+
       if (!this.userRooms.has(userId)) {
         this.userRooms.set(userId, new Set());
       }
-      this.userRooms.get(userId).add(roomId);
+      this.userRooms.get(userId).add(newRoom.id);
       
-      // Join socket room
-      socket.join(roomId);
+      // Room constructor handles socket.join(newRoom.id) and emitting 'room_joined' or similar
+      // socket.emit('roomCreated', newRoom.getRoomInfo(true)); // Room constructor should emit this or 'room_joined'
       
-      // Notify client
-      socket.emit('roomCreated', this.getRoomInfo(room));
-      
-      // Update room list for all clients
+      console.log(`RoomManager: Room ${newRoom.name} (ID: ${newRoom.id}) created by ${userNickname}.`);
       this.broadcastRoomList();
       
-      return room;
+      return newRoom.getRoomInfo(true); // Or just newRoom.id
     } catch (error) {
       socketErrorHandler(socket, error);
+      return null; // Indicate failure
     }
   }
-  
+
   joinRoom(socket, data) {
     try {
       const { roomId, password } = data;
       const userId = socket.userId;
+      const userNickname = socket.nickname;
       const room = this.rooms.get(roomId);
-      
+
       if (!room) {
         throw new Error('Room not found');
       }
-      
-      if (room.players.size >= room.maxPlayers) {
-        throw new Error('Room is full');
+      if (room.players.has(userId)) {
+         // Player is already in the room, Room.addPlayer handles rejoining/socket update
+         console.log(`Player ${userNickname} attempting to rejoin room ${roomId}.`);
+      } else if ((this.userRooms.get(userId)?.size || 0) >= this.settings.maxRoomsPerUser) {
+        throw new Error('You have reached the maximum number of rooms you can join.');
       }
-      
+
       if (room.password && room.password !== password) {
         throw new Error('Invalid password');
       }
       
-      // Add player to room
-      room.players.set(userId, {
-        id: userId,
-        nickname: socket.nickname,
-        isHost: false,
-        team: 'spectator',
-        socket: socket
-      });
-      
-      room.spectators.add(userId);
-      room.lastActivity = Date.now();
-      
-      // Map user to room
-      if (!this.userRooms.has(userId)) {
-        this.userRooms.set(userId, new Set());
-      }
-      this.userRooms.get(userId).add(roomId);
-      
-      // Join socket room
-      socket.join(roomId);
-      
-      // Notify all clients in room
-      this.io.to(roomId).emit('playerJoined', {
-        roomId,
-        player: {
-          id: userId,
-          nickname: socket.nickname,
-          team: 'spectator'
+      // Delegate to Room instance
+      const joined = room.addPlayer(socket, userId, userNickname);
+
+      if (joined) {
+        if (!this.userRooms.has(userId)) {
+          this.userRooms.set(userId, new Set());
         }
-      });
-      
-      // Send room info to joining player
-      socket.emit('roomJoined', this.getRoomInfo(room));
-      
-      return room;
+        this.userRooms.get(userId).add(roomId);
+        // room.addPlayer should handle emitting 'playerJoined' and sending 'roomJoined' to the player
+        console.log(`RoomManager: Player ${userNickname} successfully joined room ${room.name}.`);
+        // this.broadcastRoomList(); // Room's broadcastPlayerList might be sufficient if it changes player count
+      } else {
+        // addPlayer should have emitted an error to the client
+        console.warn(`RoomManager: Player ${userNickname} failed to join room ${room.name}.`);
+      }
+      return joined ? room.getRoomInfo() : null;
     } catch (error) {
       socketErrorHandler(socket, error);
+      return null;
     }
   }
-  
+
   leaveRoom(socket, roomId) {
     try {
       const userId = socket.userId;
+      const userNickname = socket.nickname; // For logging
       const room = this.rooms.get(roomId);
-      
-      if (!room) return;
-      
-      // Remove player from room
-      room.players.delete(userId);
-      room.redTeam.delete(userId);
-      room.blueTeam.delete(userId);
-      room.spectators.delete(userId);
-      room.lastActivity = Date.now();
-      
-      // Remove room mapping for user
-      this.userRooms.get(userId)?.delete(roomId);
-      if (this.userRooms.get(userId)?.size === 0) {
-        this.userRooms.delete(userId);
+
+      if (!room) {
+        console.warn(`RoomManager: Attempt to leave non-existent room ${roomId} by ${userNickname}.`);
+        return;
       }
       
-      // Leave socket room
-      socket.leave(roomId);
-      
-      // If room is empty or host left, close it
-      if (room.players.size === 0 || userId === room.host) {
-        this.closeRoom(roomId, userId === room.host ? 'Host left the room' : 'Room is empty');
-      } else {
-        // Notify remaining players
-        this.io.to(roomId).emit('playerLeft', {
-          roomId,
-          playerId: userId
-        });
-        
-        // If game was in progress, end it
-        if (room.gameInProgress) {
-          this.endGame(roomId, 'Player left during game');
+      const result = room.removePlayer(userId); // This will handle socket.leave and broadcasts
+
+      if (result) {
+        this.userRooms.get(userId)?.delete(roomId);
+        if (this.userRooms.get(userId)?.size === 0) {
+          this.userRooms.delete(userId);
         }
+        console.log(`RoomManager: Player ${userNickname} left room ${roomId}.`);
+
+        if (result === 'empty' || (userId === room.host && room.players.size === 0) ) { 
+          // Room handles host change if players remain. If it becomes empty, close it.
+          console.log(`RoomManager: Room ${roomId} is now empty or host left and empty, closing.`);
+          this.closeRoom(roomId, userId === room.host ? 'Host left and room became empty' : 'Room is empty');
+        } else if (userId === room.host) {
+            // Host left, but players remain. Room.removePlayer should have assigned a new host.
+            console.log(`RoomManager: Host ${userNickname} left room ${roomId}. New host assigned by Room instance.`);
+            this.broadcastRoomList(); // Update if host change affects listing
+        } else {
+            // Player left, room still active
+             this.broadcastRoomList(); // Update player count
+        }
+      } else {
+         console.warn(`RoomManager: Player ${userNickname} failed to be removed from room ${roomId} (perhaps not in it).`);
       }
-      
-      // Update room list
-      this.broadcastRoomList();
     } catch (error) {
       socketErrorHandler(socket, error);
     }
   }
-  
+
   changeTeam(socket, data) {
     try {
       const { roomId, team } = data;
       const userId = socket.userId;
       const room = this.rooms.get(roomId);
-      
+
       if (!room) {
         throw new Error('Room not found');
       }
-      
-      const player = room.players.get(userId);
-      if (!player) {
-        throw new Error('Player not found in room');
+      if (!room.players.has(userId)) {
+        throw new Error('Player not found in this room.');
       }
       
-      if (room.gameInProgress && room.settings.teamLock) {
-        throw new Error('Cannot change team during game');
+      // Delegate to Room instance. The Room's method will handle logic and broadcasting.
+      // Room's changePlayerTeam uses its own settings for teamLock, balance, etc.
+      const changed = room.changePlayerTeam(userId, team);
+      if (changed) {
+        console.log(`RoomManager: Player ${socket.nickname} changed team to ${team} in room ${roomId}.`);
+      } else {
+        // Error should have been emitted by Room.changePlayerTeam to the socket
+         console.warn(`RoomManager: Player ${socket.nickname} failed to change team in room ${roomId}.`);
       }
-      
-      // Remove from current team
-      room.redTeam.delete(userId);
-      room.blueTeam.delete(userId);
-      room.spectators.delete(userId);
-      
-      // Add to new team
-      switch (team) {
-        case 'red':
-          if (this.isTeamBalanced(room, 'red')) {
-            room.redTeam.add(userId);
-            player.team = 'red';
-          } else {
-            throw new Error('Teams would be unbalanced');
-          }
-          break;
-        case 'blue':
-          if (this.isTeamBalanced(room, 'blue')) {
-            room.blueTeam.add(userId);
-            player.team = 'blue';
-          } else {
-            throw new Error('Teams would be unbalanced');
-          }
-          break;
-        case 'spectator':
-          if (room.settings.allowSpectators) {
-            room.spectators.add(userId);
-            player.team = 'spectator';
-          } else {
-            throw new Error('Spectators not allowed');
-          }
-          break;
-        default:
-          throw new Error('Invalid team');
-      }
-      
-      room.lastActivity = Date.now();
-      
-      // Notify all players in room
-      this.io.to(roomId).emit('teamChanged', {
-        roomId,
-        playerId: userId,
-        team
-      });
     } catch (error) {
+      // Room.changePlayerTeam should emit errors to the socket directly.
+      // This catch is for unexpected RoomManager errors.
       socketErrorHandler(socket, error);
     }
   }
-  
+
+  updateRoomSettings(socket, data) {
+    try {
+        const { roomId, settings } = data;
+        const userId = socket.userId;
+        const room = this.rooms.get(roomId);
+
+        if (!room) {
+            throw new Error('Room not found');
+        }
+        if (room.host !== userId) {
+            throw new Error('Only the host can update room settings.');
+        }
+
+        const success = room.updateSettings(settings);
+        if (success) {
+            console.log(`RoomManager: Settings updated for room ${roomId} by host ${socket.nickname}.`);
+            // Room.updateSettings broadcasts the changes.
+        } else {
+            throw new Error('Failed to update room settings.');
+        }
+    } catch (error) {
+        socketErrorHandler(socket, error);
+    }
+  }
+
+
   startGame(socket, roomId) {
     try {
       const userId = socket.userId;
       const room = this.rooms.get(roomId);
-      
+
       if (!room) {
         throw new Error('Room not found');
       }
-      
-      if (userId !== room.host) {
-        throw new Error('Only host can start the game');
+      if (room.host !== userId) {
+        throw new Error('Only the host can start the game.');
       }
       
-      if (room.gameInProgress) {
-        throw new Error('Game already in progress');
+      // Delegate to Room instance. Room.startGame will handle logic and broadcasts.
+      const started = room.startGame();
+      if (started) {
+          console.log(`RoomManager: Game start initiated for room ${roomId} by host ${socket.nickname}.`);
+          this.broadcastRoomList(); // Update gameInProgress status
+      } else {
+          // Error/reason should have been broadcast by room.startGame()
+          console.warn(`RoomManager: Game start failed for room ${roomId}.`);
       }
-      
-      if (room.redTeam.size === 0 || room.blueTeam.size === 0) {
-        throw new Error('Need players in both teams');
-      }
-      
-      // Notify players of game starting
-      this.io.to(roomId).emit('gameStarting', {
-        roomId,
-        countdown: this.settings.gameStartDelay / 1000
-      });
-      
-      // Start game after delay
-      setTimeout(() => {
-        room.gameInProgress = true;
-        room.gameState = {
-          startTime: Date.now(),
-          score: { red: 0, blue: 0 },
-          ballPosition: { x: room.width / 2, y: room.height / 2 },
-          playerPositions: new Map()
-        };
-        
-        this.io.to(roomId).emit('gameStarted', {
-          roomId,
-          gameState: room.gameState
-        });
-      }, this.settings.gameStartDelay);
-      
-      room.lastActivity = Date.now();
     } catch (error) {
+      // Room.startGame should emit errors to the socket/room directly.
       socketErrorHandler(socket, error);
     }
   }
-  
+
+  // endGame might be called by RoomManager (e.g. admin action) or by the Room itself (e.g. game timer ends)
   endGame(roomId, reason) {
     const room = this.rooms.get(roomId);
-    if (!room || !room.gameInProgress) return;
-    
-    room.gameInProgress = false;
-    room.gameState = null;
-    room.lastActivity = Date.now();
-    
-    this.io.to(roomId).emit('gameEnded', {
-      roomId,
-      reason,
-      finalScore: room.gameState?.score
-    });
-  }
-  
-  closeRoom(roomId, reason) {
-    const room = this.rooms.get(roomId);
-    if (!room) return;
-    
-    // Notify all players
-    this.io.to(roomId).emit('roomClosed', {
-      roomId,
-      reason
-    });
-    
-    // Remove all players from room
-    for (const [userId, player] of room.players) {
-      player.socket.leave(roomId);
-      this.userRooms.get(userId)?.delete(roomId);
-      if (this.userRooms.get(userId)?.size === 0) {
-        this.userRooms.delete(userId);
-      }
+    if (!room) {
+        console.warn(`RoomManager: Attempt to end game in non-existent room ${roomId}.`);
+        return;
     }
     
-    // Delete room
-    this.rooms.delete(roomId);
+    const ended = room.endGame(reason);
+    if (ended) {
+        console.log(`RoomManager: Game ended in room ${roomId}. Reason: ${reason}`);
+        this.broadcastRoomList(); // Update gameInProgress status
+    } else {
+        // console.warn(`RoomManager: Call to endGame for room ${roomId} did nothing (game might not have been in progress).`);
+    }
+  }
+
+  closeRoom(roomId, reason) {
+    const room = this.rooms.get(roomId);
+    if (!room) {
+      console.warn(`RoomManager: Attempt to close non-existent room ${roomId}.`);
+      return;
+    }
+
+    console.log(`RoomManager: Closing room ${roomId}. Reason: ${reason}`);
+    // Notify all players in the room and make them leave the socket.io room
+    room.destroy(reason); 
+
+    // Remove user associations for this room
+    room.players.forEach(player => {
+        if (this.userRooms.has(player.id)) {
+            this.userRooms.get(player.id).delete(roomId);
+            if (this.userRooms.get(player.id).size === 0) {
+                this.userRooms.delete(player.id);
+            }
+        }
+    });
     
-    // Update room list
+    this.rooms.delete(roomId);
     this.broadcastRoomList();
+    console.log(`RoomManager: Room ${roomId} closed and removed.`);
   }
-  
-  isTeamBalanced(room, targetTeam) {
-    const redSize = targetTeam === 'red' ? room.redTeam.size + 1 : room.redTeam.size;
-    const blueSize = targetTeam === 'blue' ? room.blueTeam.size + 1 : room.blueTeam.size;
-    return Math.abs(redSize - blueSize) <= this.settings.teamBalanceThreshold;
+
+  // isTeamBalanced is now a concern of the Room class.
+
+  getRoomInfo(roomId) { // Primarily for external requests for a single room's details
+    const room = this.rooms.get(roomId);
+    if (!room) {
+      // Optional: throw new Error('Room not found');
+      return null;
+    }
+    return room.getRoomInfo(true); // Pass true if sensitive info can be included for certain contexts
   }
-  
-  getRoomInfo(room) {
-    return {
-      id: room.id,
-      name: room.name,
-      host: room.host,
-      maxPlayers: room.maxPlayers,
-      type: room.type,
-      hasPassword: !!room.password,
-      players: Array.from(room.players.values()).map(player => ({
-        id: player.id,
-        nickname: player.nickname,
-        team: player.team,
-        isHost: player.isHost
-      })),
-      redTeam: Array.from(room.redTeam),
-      blueTeam: Array.from(room.blueTeam),
-      spectators: Array.from(room.spectators),
-      gameInProgress: room.gameInProgress,
-      settings: room.settings
-    };
+
+  listRooms() { // For broadcasting the list of available rooms
+    return Array.from(this.rooms.values()).map(room => {
+        // Use a summary from Room instance or construct here
+        const basicInfo = room.getRoomInfo(); // This gets general info
+        return {
+            id: basicInfo.id,
+            name: basicInfo.name,
+            players: basicInfo.playerCount,
+            maxPlayers: basicInfo.maxPlayers,
+            type: basicInfo.type,
+            hasPassword: basicInfo.hasPassword,
+            gameInProgress: basicInfo.gameInProgress,
+            // Potentially add hostNickname here if needed for the list
+            // hostNickname: basicInfo.hostNickname 
+        };
+    });
   }
   
   broadcastRoomList() {
-    const roomList = Array.from(this.rooms.values()).map(room => ({
-      id: room.id,
-      name: room.name,
-      players: room.players.size,
-      maxPlayers: room.maxPlayers,
-      type: room.type,
-      hasPassword: !!room.password,
-      gameInProgress: room.gameInProgress
-    }));
-    
-    this.io.emit('roomList', roomList);
+    this.io.emit('roomList', this.listRooms());
   }
-  
+
   handleDisconnect(socket) {
     const userId = socket.userId;
-    const userRooms = this.userRooms.get(userId);
-    
-    if (userRooms) {
-      for (const roomId of userRooms) {
-        this.leaveRoom(socket, roomId);
+    const userNickname = socket.nickname; // For logging
+    const roomIdsUserIsIn = this.userRooms.get(userId);
+
+    if (roomIdsUserIsIn) {
+      // Create a copy of the set to iterate over, as leaveRoom can modify it
+      const roomIdsToLeave = new Set(roomIdsUserIsIn); 
+      console.log(`RoomManager: Player ${userNickname} (ID: ${userId}) disconnected. Leaving rooms: ${Array.from(roomIdsToLeave).join(', ')}`);
+      for (const roomId of roomIdsToLeave) {
+        this.leaveRoom(socket, roomId); // leaveRoom handles cleanup and broadcasts
       }
+    } else {
+        // console.log(`RoomManager: Player ${userNickname} (ID: ${userId}) disconnected, was not in any tracked rooms.`);
     }
   }
 }
 
-module.exports = RoomManager; 
+module.exports = RoomManager;

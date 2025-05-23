@@ -5,6 +5,12 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
 const { validationResult } = require('express-validator');
+const { 
+    AuthenticationError, 
+    NotFoundError, 
+    ConflictError, 
+    AppError 
+} = require('../middleware/errorHandler'); // Or directly from '../utils/customErrors'
 
 // Configurazione per l'invio di email
 const transporter = nodemailer.createTransport({
@@ -16,11 +22,14 @@ const transporter = nodemailer.createTransport({
 });
 
 // Registrazione utente
-exports.register = async (req, res) => {
+exports.register = async (req, res, next) => {
     try {
         // Validazione input
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
+            // Note: express-validator errors are typically handled by a dedicated middleware
+            // or by directly using the custom ValidationError. For this task, let's assume
+            // the existing structure for validationResult is fine, but other errors will use custom classes.
             return res.status(400).json({ errors: errors.array() });
         }
 
@@ -29,13 +38,13 @@ exports.register = async (req, res) => {
         // Verifica se l'email è già in uso
         let user = await User.findOne({ email });
         if (user) {
-            return res.status(400).json({ message: 'Email già in uso' });
+            throw new ConflictError('Email già in uso');
         }
 
         // Verifica se il nickname è già in uso
         user = await User.findOne({ nickname });
         if (user) {
-            return res.status(400).json({ message: 'Nickname già in uso' });
+            throw new ConflictError('Nickname già in uso');
         }
 
         // Crea token di verifica
@@ -73,12 +82,12 @@ exports.register = async (req, res) => {
         });
     } catch (error) {
         console.error('Errore nella registrazione:', error);
-        res.status(500).json({ message: 'Errore del server' });
+        next(error);
     }
 };
 
 // Verifica email
-exports.verifyEmail = async (req, res) => {
+exports.verifyEmail = async (req, res, next) => {
     try {
         const { token } = req.params;
 
@@ -86,7 +95,7 @@ exports.verifyEmail = async (req, res) => {
         const user = await User.findOne({ verificationToken: token });
 
         if (!user) {
-            return res.status(400).json({ message: 'Token di verifica non valido' });
+            throw new AuthenticationError('Token di verifica non valido o scaduto');
         }
 
         // Aggiorna lo stato di verifica dell'utente
@@ -97,12 +106,12 @@ exports.verifyEmail = async (req, res) => {
         res.status(200).json({ message: 'Account verificato con successo. Ora puoi effettuare il login.' });
     } catch (error) {
         console.error('Errore nella verifica email:', error);
-        res.status(500).json({ message: 'Errore del server' });
+        next(error);
     }
 };
 
 // Login
-exports.login = async (req, res) => {
+exports.login = async (req, res, next) => {
     try {
         // Validazione input
         const errors = validationResult(req);
@@ -115,29 +124,28 @@ exports.login = async (req, res) => {
         // Trova l'utente
         const user = await User.findOne({ email });
         if (!user) {
-            return res.status(400).json({ message: 'Credenziali non valide' });
+            throw new AuthenticationError('Credenziali non valide');
         }
 
         // Verifica la password
         const isMatch = await user.comparePassword(password);
         if (!isMatch) {
-            return res.status(400).json({ message: 'Credenziali non valide' });
+            throw new AuthenticationError('Credenziali non valide');
         }
 
         // Verifica se l'account è stato verificato
         if (!user.isVerified) {
-            return res.status(400).json({ message: 'Account non verificato. Controlla la tua email.' });
+            throw new AuthenticationError('Account non verificato. Controlla la tua email.');
         }
 
         // Verifica se l'utente è sospeso
         if (user.penalties.isSuspended) {
             const now = new Date();
             if (user.penalties.suspensionEndDate > now) {
-                return res.status(403).json({ 
-                    message: 'Account sospeso', 
-                    reason: user.penalties.suspensionReason,
-                    endDate: user.penalties.suspensionEndDate
-                });
+                throw new AppError(
+                    `Account sospeso: ${user.penalties.suspensionReason || 'N/A'}. Termina il: ${user.penalties.suspensionEndDate.toLocaleDateString()}`, 
+                    403
+                );
             } else {
                 // Rimuovi la sospensione se è scaduta
                 user.penalties.isSuspended = false;
@@ -164,7 +172,7 @@ exports.login = async (req, res) => {
             process.env.JWT_SECRET,
             { expiresIn: '7d' },
             (err, token) => {
-                if (err) throw err;
+                if (err) return next(err); // Pass JWT errors to the error handler
                 res.json({ 
                     token,
                     user: {
@@ -179,19 +187,19 @@ exports.login = async (req, res) => {
         );
     } catch (error) {
         console.error('Errore nel login:', error);
-        res.status(500).json({ message: 'Errore del server' });
+        next(error);
     }
 };
 
 // Richiesta reset password
-exports.forgotPassword = async (req, res) => {
+exports.forgotPassword = async (req, res, next) => {
     try {
         const { email } = req.body;
 
         // Trova l'utente
         const user = await User.findOne({ email });
         if (!user) {
-            return res.status(404).json({ message: 'Utente non trovato' });
+            throw new NotFoundError('Utente non trovato con questa email');
         }
 
         // Crea token di reset
@@ -221,12 +229,12 @@ exports.forgotPassword = async (req, res) => {
         res.status(200).json({ message: 'Email di reset password inviata' });
     } catch (error) {
         console.error('Errore nel reset password:', error);
-        res.status(500).json({ message: 'Errore del server' });
+        next(error);
     }
 };
 
 // Reset password
-exports.resetPassword = async (req, res) => {
+exports.resetPassword = async (req, res, next) => {
     try {
         const { token } = req.params;
         const { password } = req.body;
@@ -238,7 +246,7 @@ exports.resetPassword = async (req, res) => {
         });
 
         if (!user) {
-            return res.status(400).json({ message: 'Token di reset non valido o scaduto' });
+            throw new AuthenticationError('Token di reset non valido o scaduto');
         }
 
         // Aggiorna la password
@@ -250,25 +258,26 @@ exports.resetPassword = async (req, res) => {
         res.status(200).json({ message: 'Password aggiornata con successo' });
     } catch (error) {
         console.error('Errore nel reset password:', error);
-        res.status(500).json({ message: 'Errore del server' });
+        next(error);
     }
 };
 
 // Cambio password
-exports.changePassword = async (req, res) => {
+exports.changePassword = async (req, res, next) => {
     try {
         const { currentPassword, newPassword } = req.body;
 
         // Trova l'utente
         const user = await User.findById(req.user.id);
         if (!user) {
-            return res.status(404).json({ message: 'Utente non trovato' });
+            // This case should ideally not be reached if auth middleware is effective
+            throw new NotFoundError('Utente non trovato');
         }
 
         // Verifica la password attuale
         const isMatch = await user.comparePassword(currentPassword);
         if (!isMatch) {
-            return res.status(400).json({ message: 'Password attuale non corretta' });
+            throw new AuthenticationError('Password attuale non corretta');
         }
 
         // Aggiorna la password
@@ -278,27 +287,28 @@ exports.changePassword = async (req, res) => {
         res.status(200).json({ message: 'Password aggiornata con successo' });
     } catch (error) {
         console.error('Errore nel cambio password:', error);
-        res.status(500).json({ message: 'Errore del server' });
+        next(error);
     }
 };
 
 // Ottieni profilo utente
-exports.getProfile = async (req, res) => {
+exports.getProfile = async (req, res, next) => {
     try {
         const user = await User.findById(req.user.id).select('-password');
         if (!user) {
-            return res.status(404).json({ message: 'Utente non trovato' });
+            // This case should ideally not be reached if auth middleware is effective
+            throw new NotFoundError('Utente non trovato');
         }
 
         res.json(user);
     } catch (error) {
         console.error('Errore nel recupero profilo:', error);
-        res.status(500).json({ message: 'Errore del server' });
+        next(error);
     }
 };
 
 // Aggiorna profilo utente
-exports.updateProfile = async (req, res) => {
+exports.updateProfile = async (req, res, next) => {
     try {
         const { nickname } = req.body;
 
@@ -306,20 +316,24 @@ exports.updateProfile = async (req, res) => {
         if (nickname) {
             const existingUser = await User.findOne({ nickname });
             if (existingUser && existingUser.id !== req.user.id) {
-                return res.status(400).json({ message: 'Nickname già in uso' });
+                throw new ConflictError('Nickname già in uso');
             }
         }
 
         // Aggiorna il profilo
         const user = await User.findByIdAndUpdate(
             req.user.id,
-            { nickname },
+            { nickname }, // Only nickname is updatable here as per current code
             { new: true }
         ).select('-password');
+        
+        if (!user) { // Should not happen if req.user.id is valid
+            throw new NotFoundError('Utente non trovato durante l\'aggiornamento');
+        }
 
         res.json(user);
     } catch (error) {
         console.error('Errore nell\'aggiornamento profilo:', error);
-        res.status(500).json({ message: 'Errore del server' });
+        next(error);
     }
 };
