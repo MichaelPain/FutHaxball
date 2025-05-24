@@ -1,6 +1,9 @@
 /**
  * Sistema di gestione dell'autenticazione per l'interfaccia utente
  */
+import i18n from '../utils/i18n.js';
+import eventManager from '../utils/eventManager.js'; // Corrected path
+
 class AuthUI {
   constructor(authManager, screenManager) {
     this.authManager = authManager;
@@ -19,8 +22,84 @@ class AuthUI {
     
     // Inizializza il validatore di password
     this.initPasswordValidator();
+
+    // Apply initial translations
+    this.translateUIElements();
+
+    // Listen for language changes
+    eventManager.on('language:change', this.translateUIElements.bind(this));
   }
   
+  translateUIElements() {
+    // Loading screen
+    const loadingScreenText = document.querySelector('#loading-screen p');
+    if (loadingScreenText) {
+      loadingScreenText.textContent = i18n.t('common.loading');
+    }
+
+    // Auth Tabs
+    if (this.loginTab) this.loginTab.textContent = i18n.t('auth.login.title');
+    if (this.registerTab) this.registerTab.textContent = i18n.t('auth.register.title');
+
+    // Login Form
+    const loginEmailLabel = document.querySelector('label[for="login-email"]');
+    if (loginEmailLabel) loginEmailLabel.textContent = i18n.t('auth.login.emailLabel');
+    if (this.loginEmail) this.loginEmail.placeholder = i18n.t('auth.login.emailPlaceholder');
+    
+    const loginPasswordLabel = document.querySelector('label[for="login-password"]');
+    if (loginPasswordLabel) loginPasswordLabel.textContent = i18n.t('auth.login.password');
+    if (this.loginPassword) this.loginPassword.placeholder = i18n.t('auth.login.passwordPlaceholder');
+    
+    const rememberMeLabel = document.querySelector('label[for="remember-me"]');
+    if (rememberMeLabel) rememberMeLabel.textContent = i18n.t('auth.login.remember');
+    
+    if (this.loginButton) this.loginButton.textContent = i18n.t('auth.login.submit');
+    if (this.forgotPasswordLink) this.forgotPasswordLink.textContent = i18n.t('auth.login.forgot');
+    
+    if (this.guestButton) {
+        // Set text based on current state, or default if not disabled
+        if (this.guestButton.disabled) {
+            this.guestButton.textContent = i18n.t('auth.login.loggingIn');
+        } else {
+            this.guestButton.textContent = i18n.t('auth.login.guestButton');
+        }
+    }
+    
+    // Register Form
+    const registerNicknameLabel = document.querySelector('label[for="register-nickname"]');
+    if (registerNicknameLabel) registerNicknameLabel.textContent = i18n.t('auth.register.nicknameLabel');
+    if (this.registerNickname) this.registerNickname.placeholder = i18n.t('auth.register.nicknamePlaceholder');
+    
+    const registerEmailLabel = document.querySelector('label[for="register-email"]');
+    if (registerEmailLabel) registerEmailLabel.textContent = i18n.t('auth.register.email');
+    if (this.registerEmail) this.registerEmail.placeholder = i18n.t('auth.register.emailPlaceholder');
+    
+    const registerPasswordLabel = document.querySelector('label[for="register-password"]');
+    if (registerPasswordLabel) registerPasswordLabel.textContent = i18n.t('auth.register.password');
+    if (this.registerPassword) this.registerPassword.placeholder = i18n.t('auth.register.passwordPlaceholder');
+    
+    const registerConfirmPasswordLabel = document.querySelector('label[for="register-confirm-password"]');
+    if (registerConfirmPasswordLabel) registerConfirmPasswordLabel.textContent = i18n.t('auth.register.confirmPassword');
+    if (this.registerConfirmPassword) this.registerConfirmPassword.placeholder = i18n.t('auth.register.confirmPasswordPlaceholder');
+    
+    if (this.registerButton) this.registerButton.textContent = i18n.t('auth.register.submit');
+
+    // Forgot Password Form
+    const forgotEmailLabel = document.querySelector('label[for="forgot-email"]');
+    if (forgotEmailLabel) forgotEmailLabel.textContent = i18n.t('auth.forgot.emailLabel');
+    if (this.forgotEmail) this.forgotEmail.placeholder = i18n.t('auth.forgot.emailPlaceholder');
+
+    if (this.forgotButton) {
+        // Set text based on current state, or default if not disabled
+        if (this.forgotButton.disabled) {
+            this.forgotButton.textContent = i18n.t('auth.forgot.sendingRecovery');
+        } else {
+            this.forgotButton.textContent = i18n.t('auth.forgot.submitButton');
+        }
+    }
+    if (this.backToLoginLink) this.backToLoginLink.textContent = i18n.t('auth.forgot.backToLoginLink');
+  }
+
   /**
    * Inizializza i riferimenti agli elementi dell'interfaccia
    */
@@ -146,6 +225,9 @@ class AuthUI {
     
     // Resetta i messaggi di errore e successo
     this.resetMessages();
+
+    // Re-apply translations
+    this.translateUIElements();
   }
   
   /**
@@ -240,31 +322,32 @@ class AuthUI {
     // Lunghezza minima
     if (password.length < this.passwordRequirements.minLength) {
       result.isValid = false;
-      result.errors.push(`La password deve essere di almeno ${this.passwordRequirements.minLength} caratteri`);
+      // Using i18n for error messages from password validator
+      result.errors.push(i18n.t('auth.password.minLength', {length: this.passwordRequirements.minLength}));
     }
 
     // Caratteri maiuscoli
     if (this.passwordRequirements.requireUppercase && !/[A-Z]/.test(password)) {
       result.isValid = false;
-      result.errors.push('La password deve contenere almeno una lettera maiuscola');
+      result.errors.push(i18n.t('auth.password.requireUppercase'));
     }
 
     // Caratteri minuscoli
     if (this.passwordRequirements.requireLowercase && !/[a-z]/.test(password)) {
       result.isValid = false;
-      result.errors.push('La password deve contenere almeno una lettera minuscola');
+      result.errors.push(i18n.t('auth.password.requireLowercase'));
     }
 
     // Numeri
     if (this.passwordRequirements.requireNumbers && !/\d/.test(password)) {
       result.isValid = false;
-      result.errors.push('La password deve contenere almeno un numero');
+      result.errors.push(i18n.t('auth.password.requireNumbers'));
     }
 
     // Caratteri speciali
     if (this.passwordRequirements.requireSpecialChars && !/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
       result.isValid = false;
-      result.errors.push('La password deve contenere almeno un carattere speciale');
+      result.errors.push(i18n.t('auth.password.requireSpecialChars'));
     }
 
     // Calcola la forza della password
@@ -304,7 +387,8 @@ class AuthUI {
     // Verifica se l'account è bloccato
     if (this.lockoutEndTime && Date.now() < this.lockoutEndTime) {
       const remainingTime = Math.ceil((this.lockoutEndTime - Date.now()) / 1000 / 60);
-      this.showError('login', `Account temporaneamente bloccato. Riprova tra ${remainingTime} minuti.`);
+      // Using i18n for error message
+      this.showError('login', i18n.t('auth.errors.accountLocked', {minutes: remainingTime}));
       return;
     }
 
@@ -313,7 +397,8 @@ class AuthUI {
     const rememberMe = this.rememberMe.checked;
 
     if (!email || !password) {
-      this.showError('login', 'Inserisci email e password');
+      // Using i18n for error message
+      this.showError('login', i18n.t('auth.errors.enterEmailPassword'));
       return;
     }
 
@@ -329,7 +414,8 @@ class AuthUI {
         if (result.requires2FA) {
           this.show2FAForm();
         } else {
-          this.showSuccess('login', 'Login effettuato con successo');
+          // Using i18n for success message (though it's not in the provided keys, good practice)
+          this.showSuccess('login', i18n.t('auth.login.success', {defaultValue: 'Login effettuato con successo'}));
           this.screenManager.showScreen('main-menu');
         }
       } else {
@@ -337,14 +423,18 @@ class AuthUI {
         
         if (this.loginAttempts >= this.maxLoginAttempts) {
           this.lockoutEndTime = Date.now() + this.lockoutTime;
-          this.showError('login', `Troppi tentativi falliti. Account bloccato per 15 minuti.`);
+          // Using i18n for error message
+           const lockoutMinutes = Math.ceil(this.lockoutTime / (1000 * 60));
+          this.showError('login', i18n.t('auth.errors.accountLocked', {minutes: lockoutMinutes}));
         } else {
-          this.showError('login', `Credenziali non valide. Tentativi rimanenti: ${this.maxLoginAttempts - this.loginAttempts}`);
+          // Using i18n for error message
+          this.showError('login', i18n.t('auth.errors.invalidCredentials', {attempts: this.maxLoginAttempts - this.loginAttempts}));
         }
       }
     } catch (error) {
       console.error('Errore durante il login:', error);
-      this.showError('login', 'Si è verificato un errore durante il login');
+      // Using i18n for error message
+      this.showError('login', i18n.t('auth.errors.generic'));
     }
   }
   
@@ -374,26 +464,30 @@ class AuthUI {
 
     // Validazione base
     if (!nickname || !email || !password || !confirmPassword) {
-      this.showError('register', 'Compila tutti i campi');
+      // Using i18n for error message
+      this.showError('register', i18n.t('auth.errors.fillAllFields'));
       return;
     }
 
     // Validazione email
     if (!this.validateEmail(email)) {
-      this.showError('register', 'Email non valida');
+      // Using i18n for error message
+      this.showError('register', i18n.t('auth.errors.invalidEmail'));
       return;
     }
 
     // Validazione password
     const passwordValidation = this.validatePassword(password);
     if (!passwordValidation.isValid) {
+      // Error messages from validatePassword are already internationalized
       this.showError('register', passwordValidation.errors.join('\n'));
       return;
     }
 
     // Verifica corrispondenza password
     if (password !== confirmPassword) {
-      this.showError('register', 'Le password non coincidono');
+      // Using i18n for error message
+      this.showError('register', i18n.t('auth.errors.passwordsNoMatch'));
       return;
     }
 
@@ -401,14 +495,16 @@ class AuthUI {
       const result = await this.authManager.register(nickname, email, password);
       
       if (result.success) {
-        this.showSuccess('register', 'Registrazione effettuata con successo');
+        // Using i18n for success message
+        this.showSuccess('register', i18n.t('auth.register.registrationSuccess'));
         this.showForm('login');
       } else {
-        this.showError('register', result.message || 'Errore durante la registrazione');
+        this.showError('register', result.message || i18n.t('auth.errors.generic'));
       }
     } catch (error) {
       console.error('Errore durante la registrazione:', error);
-      this.showError('register', 'Si è verificato un errore durante la registrazione');
+      // Using i18n for error message
+      this.showError('register', i18n.t('auth.errors.generic'));
     }
   }
   
@@ -431,7 +527,7 @@ class AuthUI {
     
     // Disabilita il pulsante durante il login
     this.guestButton.disabled = true;
-    this.guestButton.textContent = 'Accesso in corso...';
+    this.guestButton.textContent = i18n.t('auth.login.loggingIn');
     
     // Effettua il login come ospite
     this.authManager.loginAsGuest()
@@ -441,12 +537,12 @@ class AuthUI {
       })
       .catch(error => {
         // Mostra l'errore
-        this.showError('login', error.message || 'Errore durante il login come ospite');
+        this.showError('login', error.message || i18n.t('auth.errors.generic'));
       })
       .finally(() => {
         // Riabilita il pulsante
         this.guestButton.disabled = false;
-        this.guestButton.textContent = 'Gioca come ospite';
+        this.translateUIElements(); // Update button text to default and other elements
       });
   }
   
@@ -462,19 +558,21 @@ class AuthUI {
     
     // Validazione base
     if (!email) {
-      this.showError('forgot', 'Inserisci la tua email');
+      // Using i18n for error message
+      this.showError('forgot', i18n.t('auth.errors.invalidEmail')); // Or a more specific "enter email"
       return;
     }
     
     // Disabilita il pulsante durante la richiesta
     this.forgotButton.disabled = true;
-    this.forgotButton.textContent = 'Invio in corso...';
+    this.forgotButton.textContent = i18n.t('auth.forgot.sendingRecovery');
     
     // Effettua la richiesta di recupero password
     this.authManager.requestPasswordReset(email)
       .then(() => {
         // Richiesta riuscita, mostra messaggio di successo
-        this.showSuccess('forgot', 'Istruzioni per il reset della password inviate alla tua email');
+        // Using i18n for success message
+        this.showSuccess('forgot', i18n.t('auth.forgot.recoverySentSuccess'));
         
         // Pulisci i campi
         this.forgotEmail.value = '';
@@ -486,12 +584,12 @@ class AuthUI {
       })
       .catch(error => {
         // Mostra l'errore
-        this.showError('forgot', error.message || 'Errore durante la richiesta di recupero password');
+        this.showError('forgot', error.message || i18n.t('auth.errors.generic'));
       })
       .finally(() => {
         // Riabilita il pulsante
         this.forgotButton.disabled = false;
-        this.forgotButton.textContent = 'Recupera Password';
+        this.translateUIElements(); // Update button text to default and other elements
       });
   }
 }

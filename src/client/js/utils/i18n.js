@@ -123,26 +123,41 @@ class I18n {
             title: 'Accedi',
             username: 'Username',
             password: 'Password',
+            emailLabel: 'Email',
+            emailPlaceholder: 'Inserisci la tua email',
+            passwordPlaceholder: 'Inserisci la tua password',
             remember: 'Ricordami',
             submit: 'Accedi',
             forgot: 'Password dimenticata?',
-            register: 'Non hai un account? Registrati'
+            register: 'Non hai un account? Registrati',
+            guestButton: 'Gioca come ospite',
+            loggingIn: 'Accesso in corso...'
           },
           register: {
             title: 'Registrati',
             username: 'Username',
+            nicknameLabel: 'Nickname',
+            nicknamePlaceholder: 'Scegli un nickname',
             email: 'Email',
+            emailPlaceholder: 'Inserisci la tua email',
             password: 'Password',
+            passwordPlaceholder: 'Crea una password',
             confirmPassword: 'Conferma password',
+            confirmPasswordPlaceholder: 'Conferma la password',
             terms: 'Accetto i termini e le condizioni',
             submit: 'Registrati',
-            login: 'Hai già un account? Accedi'
+            login: 'Hai già un account? Accedi',
+            registrationSuccess: 'Registrazione effettuata con successo'
           },
           forgot: {
             title: 'Password dimenticata',
             email: 'Email',
-            submit: 'Reimposta password',
-            login: 'Torna al login'
+            emailLabel: 'Email',
+            emailPlaceholder: 'Inserisci la tua email',
+            submitButton: 'Recupera Password',
+            backToLoginLink: 'Torna al login',
+            sendingRecovery: 'Invio in corso...',
+            recoverySentSuccess: 'Istruzioni per il reset della password inviate alla tua email'
           },
           reset: {
             title: 'Reimposta password',
@@ -158,6 +173,23 @@ class I18n {
             confirmPassword: 'Conferma password',
             submit: 'Cambia password',
             cancel: 'Annulla'
+          },
+          errors: {
+            enterEmailPassword: 'Inserisci email e password',
+            accountLocked: 'Account temporaneamente bloccato. Riprova tra {minutes} minuti.',
+            invalidCredentials: 'Credenziali non valide. Tentativi rimanenti: {attempts}',
+            fillAllFields: 'Compila tutti i campi',
+            invalidEmail: 'Email non valida',
+            passwordsNoMatch: 'Le password non coincidono',
+            generic: 'Si è verificato un errore'
+          },
+          password: {
+            errorTitle: 'Errore validazione password',
+            minLength: 'La password deve essere di almeno {length} caratteri',
+            requireUppercase: 'La password deve contenere almeno una lettera maiuscola',
+            requireLowercase: 'La password deve contenere almeno una lettera minuscola',
+            requireNumbers: 'La password deve contenere almeno un numero',
+            requireSpecialChars: 'La password deve contenere almeno un carattere speciale'
           }
         },
         game: {
@@ -389,26 +421,41 @@ class I18n {
             title: 'Login',
             username: 'Username',
             password: 'Password',
+            emailLabel: 'Email',
+            emailPlaceholder: 'Enter your email',
+            passwordPlaceholder: 'Enter your password',
             remember: 'Remember me',
             submit: 'Login',
             forgot: 'Forgot password?',
-            register: 'Don\'t have an account? Register'
+            register: 'Don\'t have an account? Register',
+            guestButton: 'Play as guest',
+            loggingIn: 'Logging in...'
           },
           register: {
             title: 'Register',
             username: 'Username',
+            nicknameLabel: 'Nickname',
+            nicknamePlaceholder: 'Choose a nickname',
             email: 'Email',
+            emailPlaceholder: 'Enter your email',
             password: 'Password',
+            passwordPlaceholder: 'Create a password',
             confirmPassword: 'Confirm password',
+            confirmPasswordPlaceholder: 'Confirm your password',
             terms: 'I accept the terms and conditions',
             submit: 'Register',
-            login: 'Already have an account? Login'
+            login: 'Already have an account? Login',
+            registrationSuccess: 'Registration successful'
           },
           forgot: {
             title: 'Forgot Password',
             email: 'Email',
-            submit: 'Reset password',
-            login: 'Back to login'
+            emailLabel: 'Email',
+            emailPlaceholder: 'Enter your email',
+            submitButton: 'Reset password',
+            backToLoginLink: 'Back to login',
+            sendingRecovery: 'Sending recovery instructions...',
+            recoverySentSuccess: 'Password reset instructions sent to your email'
           },
           reset: {
             title: 'Reset Password',
@@ -424,6 +471,23 @@ class I18n {
             confirmPassword: 'Confirm password',
             submit: 'Change password',
             cancel: 'Cancel'
+          },
+          errors: {
+            enterEmailPassword: 'Please enter email and password',
+            accountLocked: 'Account temporarily locked. Try again in {minutes} minutes.',
+            invalidCredentials: 'Invalid credentials. Attempts remaining: {attempts}',
+            fillAllFields: 'Please fill in all fields',
+            invalidEmail: 'Invalid email address',
+            passwordsNoMatch: 'Passwords do not match',
+            generic: 'An error occurred'
+          },
+          password: {
+            errorTitle: 'Password validation error',
+            minLength: 'Password must be at least {length} characters',
+            requireUppercase: 'Password must contain at least one uppercase letter',
+            requireLowercase: 'Password must contain at least one lowercase letter',
+            requireNumbers: 'Password must contain at least one number',
+            requireSpecialChars: 'Password must contain at least one special character'
           }
         },
         game: {
