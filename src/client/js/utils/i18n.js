@@ -116,7 +116,8 @@ class I18n {
           show: 'Mostra',
           hide: 'Nascondi',
           expand: 'Espandi',
-          collapse: 'Comprimi'
+          collapse: 'Comprimi',
+          loadError: 'Si è verificato un errore durante il caricamento. Ricarica la pagina.'
         },
         auth: {
           login: {
@@ -131,7 +132,9 @@ class I18n {
             forgot: 'Password dimenticata?',
             register: 'Non hai un account? Registrati',
             guestButton: 'Gioca come ospite',
-            loggingIn: 'Accesso in corso...'
+            loggingIn: 'Accesso in corso...',
+            logoutSuccess: 'Logout effettuato con successo',
+            logoutError: 'Errore durante il logout'
           },
           register: {
             title: 'Registrati',
@@ -414,7 +417,8 @@ class I18n {
           show: 'Show',
           hide: 'Hide',
           expand: 'Expand',
-          collapse: 'Collapse'
+          collapse: 'Collapse',
+          loadError: 'An error occurred during loading. Please refresh the page.'
         },
         auth: {
           login: {
@@ -429,7 +433,9 @@ class I18n {
             forgot: 'Forgot password?',
             register: 'Don\'t have an account? Register',
             guestButton: 'Play as guest',
-            loggingIn: 'Logging in...'
+            loggingIn: 'Logging in...',
+            logoutSuccess: 'Logout successful',
+            logoutError: 'Error during logout'
           },
           register: {
             title: 'Register',

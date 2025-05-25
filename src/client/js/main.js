@@ -2,6 +2,8 @@
 
 // Importa i moduli necessari
 import { AuthManager } from './authManager.js';
+import AuthUI from './ui/auth.js';
+import i18n from './utils/i18n.js';
 import { NetworkManager } from './networkManager.js';
 import { RoomManager } from './roomManager.js';
 import { UIManager } from './uiManager.js';
@@ -95,14 +97,14 @@ document.addEventListener('DOMContentLoaded', () => {
             // Mostra la schermata di autenticazione
             uiManager.showScreen('auth-screen');
             
-            // Inizializza la schermata di autenticazione
-            initAuthScreen();
+            // AuthUI is now responsible for initializing the auth screen logic
+            // initAuthScreen(); // This function will be emptied or repurposed
         }
     })
     .catch(error => {
         console.error('Errore durante l\'inizializzazione:', error);
         // Mostra un messaggio di errore all'utente
-        uiManager.showNotification('Si è verificato un errore durante il caricamento. Ricarica la pagina.', 'error');
+        uiManager.showNotification(i18n.t('common.loadError'), 'error');
     });
 });
 
@@ -114,6 +116,10 @@ function initManagers() {
     
     // Inizializza il gestore dell'autenticazione passando uiManager
     authManager = new AuthManager(uiManager);
+
+    // Inizializza AuthUI e passa le dipendenze necessarie
+    // AuthUI si occuperà di gestire gli elementi UI della schermata di autenticazione
+    const authUI = new AuthUI(authManager, uiManager);
     
     // Inizializza il gestore della rete
     networkManager = new NetworkManager();
@@ -270,225 +276,11 @@ function setupGlobalEventListeners() {
 
 // Inizializza la schermata di autenticazione
 function initAuthScreen() {
-    const authTabs = document.querySelectorAll('.auth-tab');
-    const authForms = document.querySelectorAll('.auth-form');
-    
-    // Gestisci i tab di autenticazione
-    authTabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-            const tabName = tab.getAttribute('data-tab');
-            
-            // Rimuovi la classe active da tutti i tab
-            authTabs.forEach(t => t.classList.remove('active'));
-            
-            // Aggiungi la classe active al tab corrente
-            tab.classList.add('active');
-            
-            // Nascondi tutti i form
-            authForms.forEach(form => form.style.display = 'none');
-            
-            // Mostra il form corrispondente
-            document.getElementById(`${tabName}-form`).style.display = 'block';
-        });
-    });
-    
-    // Gestisci il link per il recupero password
-    const forgotPasswordLink = document.getElementById('forgot-password');
-    if (forgotPasswordLink) {
-        forgotPasswordLink.addEventListener('click', () => {
-            // Nascondi tutti i form
-            authForms.forEach(form => form.style.display = 'none');
-            
-            // Mostra il form di recupero password
-            document.getElementById('forgot-form').style.display = 'block';
-        });
-    }
-    
-    // Gestisci il link per tornare al login
-    const backToLoginLink = document.getElementById('back-to-login');
-    if (backToLoginLink) {
-        backToLoginLink.addEventListener('click', () => {
-            // Nascondi tutti i form
-            authForms.forEach(form => form.style.display = 'none');
-            
-            // Mostra il form di login
-            document.getElementById('login-form').style.display = 'block';
-            
-            // Attiva il tab di login
-            authTabs.forEach(t => t.classList.remove('active'));
-            document.querySelector('[data-tab="login"]').classList.add('active');
-        });
-    }
-    
-    // Gestisci il form di login
-    const loginForm = document.getElementById('login-form');
-    if (loginForm) {
-        const loginButton = document.getElementById('login-button');
-        
-        loginButton.addEventListener('click', () => {
-            // Ottieni i dati dal form
-            const email = document.getElementById('login-email').value;
-            const password = document.getElementById('login-password').value;
-            const rememberMe = document.getElementById('remember-me').checked;
-            
-            // Validazione dei campi
-            let isValid = true;
-            
-            if (!email) {
-                document.getElementById('login-email-error').textContent = 'Inserisci la tua email';
-                isValid = false;
-            } else {
-                document.getElementById('login-email-error').textContent = '';
-            }
-            
-            if (!password) {
-                document.getElementById('login-password-error').textContent = 'Inserisci la tua password';
-                isValid = false;
-            } else {
-                document.getElementById('login-password-error').textContent = '';
-            }
-            
-            if (isValid) {
-                // Mostra un messaggio di caricamento
-                document.getElementById('login-button').textContent = 'Accesso in corso...';
-                
-                // Effettua il login
-                authManager.login(email, password, rememberMe)
-                    .then(() => {
-                        // Login riuscito
-                        uiManager.showNotification('Login effettuato con successo', 'success');
-                        
-                        // Reindirizza al menu principale
-                        uiManager.showScreen('main-menu-screen');
-                        
-                        // Inizializza il menu principale
-                        initMainMenu();
-                    })
-                    .catch(error => {
-                        // Login fallito
-                        document.getElementById('login-error').textContent = error.message || 'Credenziali non valide';
-                        document.getElementById('login-button').textContent = 'Accedi';
-                    });
-            }
-        });
-    }
-    
-    // Gestisci il form di registrazione
-    const registerForm = document.getElementById('register-form');
-    if (registerForm) {
-        const registerButton = document.getElementById('register-button');
-        
-        registerButton.addEventListener('click', () => {
-            // Ottieni i dati dal form
-            const nickname = document.getElementById('register-nickname').value;
-            const email = document.getElementById('register-email').value;
-            const password = document.getElementById('register-password').value;
-            const confirmPassword = document.getElementById('register-confirm-password').value;
-            
-            // Validazione dei campi
-            let isValid = true;
-            
-            if (!nickname) {
-                document.getElementById('register-nickname-error').textContent = 'Inserisci un nickname';
-                isValid = false;
-            } else {
-                document.getElementById('register-nickname-error').textContent = '';
-            }
-            
-            if (!email) {
-                document.getElementById('register-email-error').textContent = 'Inserisci la tua email';
-                isValid = false;
-            } else {
-                document.getElementById('register-email-error').textContent = '';
-            }
-            
-            if (!password) {
-                document.getElementById('register-password-error').textContent = 'Inserisci una password';
-                isValid = false;
-            } else {
-                document.getElementById('register-password-error').textContent = '';
-            }
-            
-            if (password !== confirmPassword) {
-                document.getElementById('register-confirm-password-error').textContent = 'Le password non coincidono';
-                isValid = false;
-            } else {
-                document.getElementById('register-confirm-password-error').textContent = '';
-            }
-            
-            if (isValid) {
-                // Mostra un messaggio di caricamento
-                document.getElementById('register-button').textContent = 'Registrazione in corso...';
-                
-                // Effettua la registrazione
-                authManager.register(nickname, email, password)
-                    .then(() => {
-                        // Registrazione riuscita
-                        uiManager.showNotification('Registrazione effettuata con successo', 'success');
-                        
-                        // Reindirizza al menu principale
-                        uiManager.showScreen('main-menu-screen');
-                        
-                        // Inizializza il menu principale
-                        initMainMenu();
-                    })
-                    .catch(error => {
-                        // Registrazione fallita
-                        document.getElementById('register-error').textContent = error.message || 'Errore durante la registrazione';
-                        document.getElementById('register-button').textContent = 'Registrati';
-                    });
-            }
-        });
-    }
-    
-    // Gestisci il form di recupero password
-    const forgotForm = document.getElementById('forgot-form');
-    if (forgotForm) {
-        const forgotButton = document.getElementById('forgot-button');
-        
-        forgotButton.addEventListener('click', () => {
-            // Ottieni i dati dal form
-            const email = document.getElementById('forgot-email').value;
-            
-            // Validazione dei campi
-            let isValid = true;
-            
-            if (!email) {
-                document.getElementById('forgot-email-error').textContent = 'Inserisci la tua email';
-                isValid = false;
-            } else {
-                document.getElementById('forgot-email-error').textContent = '';
-            }
-            
-            if (isValid) {
-                // Mostra un messaggio di caricamento
-                document.getElementById('forgot-button').textContent = 'Invio in corso...';
-                
-                // Effettua il recupero password
-                authManager.forgotPassword(email)
-                    .then(() => {
-                        // Recupero password riuscito
-                        uiManager.showNotification('Email di recupero inviata con successo', 'success');
-                        
-                        // Torna al form di login
-                        document.getElementById('forgot-form').style.display = 'none';
-                        document.getElementById('login-form').style.display = 'block';
-                        
-                        // Attiva il tab di login
-                        authTabs.forEach(t => t.classList.remove('active'));
-                        document.querySelector('[data-tab="login"]').classList.add('active');
-                        
-                        // Resetta il form
-                        document.getElementById('forgot-button').textContent = 'Invia';
-                    })
-                    .catch(error => {
-                        // Recupero password fallito
-                        document.getElementById('forgot-error').textContent = error.message || 'Errore durante l\'invio dell\'email';
-                        document.getElementById('forgot-button').textContent = 'Invia';
-                    });
-            }
-        });
-    }
+    // Tutta la logica UI per l'autenticazione è ora gestita da AuthUI.js
+    // Questa funzione può essere lasciata vuota, o rimossa se la chiamata
+    // uiManager.showScreen('auth-screen') è sufficiente e AuthUI si inizializza correttamente.
+    // Per ora, la lasceremo vuota per mantenere la struttura delle chiamate esistente.
+    console.log("Auth screen display triggered, AuthUI should handle the interactions.");
 }
 
 // Inizializza il menu principale
@@ -545,17 +337,17 @@ function handleMenuOption(action) {
             authManager.logout()
                 .then(() => {
                     // Logout riuscito
-                    uiManager.showNotification('Logout effettuato con successo', 'success');
+                    uiManager.showNotification(i18n.t('auth.logoutSuccess'), 'success');
                     
                     // Reindirizza alla schermata di autenticazione
                     uiManager.showScreen('auth-screen');
                     
-                    // Inizializza la schermata di autenticazione
-                    initAuthScreen();
+                    // AuthUI gestirà la schermata di autenticazione
+                    // initAuthScreen(); // Non più necessario chiamare la versione vecchia
                 })
                 .catch(error => {
                     // Logout fallito
-                    uiManager.showNotification('Errore durante il logout', 'error');
+                    uiManager.showNotification(i18n.t('auth.logoutError'), 'error');
                 });
             break;
         default:
